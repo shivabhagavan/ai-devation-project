@@ -1,0 +1,9 @@
+.env
+.venv/
+venv/
+node_modules/
+_pycache_/
+*.pyc
+*.db
+chroma_db/
+vector_store/
