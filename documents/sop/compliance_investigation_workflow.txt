@@ -1,0 +1,18 @@
+Deviation Memo Template
+
+Fields Required:
+- Person Completing Form
+- AER Version Number
+- Generic Product Name
+- Country
+- ICH Receipt Date
+- Timeline
+- Process Point
+- Assignable Cause Category
+- Assignable Cause Detail
+- Assignable Cause Detail Descriptor
+- Functional Category and Area
+- Description of Reason for Lateness
+- Correction
+- CAPA
+- Signatures

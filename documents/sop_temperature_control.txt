@@ -1,0 +1,9 @@
+SOP: Temperature Monitoring in Manufacturing
+
+Temperature during processing must not exceed 75°C.
+Any excursion beyond acceptable limits must be documented as a deviation.
+
+Immediate actions:
+- Stop process
+- Quarantine batch
+- Perform root cause investigation

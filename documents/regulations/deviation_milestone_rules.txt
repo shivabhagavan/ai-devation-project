@@ -1,0 +1,8 @@
+Deviation Memo Milestone Timeline Rules
+
+1. Preliminary Assessment must be completed within 5 calendar days.
+2. Draft Deviation Memo must be completed within 15 calendar days.
+3. Final Deviation Memo must be completed within 30 calendar days.
+4. Investigation must be closed within 35 calendar days.
+
+If any of these timelines are exceeded, it is a compliance deviation.

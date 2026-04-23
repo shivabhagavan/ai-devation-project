@@ -1,0 +1,19 @@
+AI-ASSISTED DEVIATION REPORT
+
+1. Deviation Description
+On 12 January 2026, a deviation was identified for Study ABC-123 wherein SAE report was submitted later than the regulatory reporting timeline. The deviation was detected during Internal quality audit. Immediate action taken: The SAE report was submitted immediately upon identification.
+
+2. Impact Assessment
+- Patient Safety: No direct patient safety impact identified
+- Data Integrity: Potential impact due to delayed reporting
+- Regulatory Compliance: Reporting timeline deviation identified
+
+3. Root Cause Analysis
+Root Cause: Insufficient staffing during peak workload
+
+4. CAPA
+Corrective Action: Cleared pending SAE backlog
+Preventive Action: Updated SOP and conducted refresher training
+
+5. Summary
+This report was generated using AI-assisted modules with mandatory human review.

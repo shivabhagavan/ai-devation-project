@@ -1,0 +1,19 @@
+Sample Deviation Case
+
+Timeline: 15 Days
+Process Point: Inbound Delay
+Assignable Cause Category: Late to GMS from Affiliate
+Assignable Cause Detail: Case Receipt Error
+Assignable Cause Detail Descriptor: Mis-handled Documents
+Functional Area: Local Operating Company
+
+Reason:
+Mailbox was not monitored and email was missed.
+
+Correction:
+Assign person to check mailbox daily.
+
+CAPA:
+- Daily mailbox monitoring
+- Backup person during leave
+- Weekly audit

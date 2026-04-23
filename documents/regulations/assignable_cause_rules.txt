@@ -1,0 +1,21 @@
+Assignable Cause Categories
+
+Process Point:
+- Inbound Delay
+- Case Processing Delay
+- Reporting Delay
+
+Assignable Cause Category:
+- Late to GMS from Affiliate
+- Process Deviation
+- Human Error
+- System Issue
+- Training Issue
+
+Assignable Cause Detail:
+- Case Receipt Error
+- Mis-handled Documents
+- Incorrect Data Entry
+- Missed Email
+- System Downtime
+- Mailbox Not Checked

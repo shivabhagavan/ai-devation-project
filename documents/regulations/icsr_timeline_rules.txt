@@ -1,0 +1,12 @@
+ICSR Reporting Timeline Rules
+
+1. Fatal or Life-Threatening cases must be reported within 7 calendar days.
+2. Other serious cases must be reported within 15 calendar days.
+3. Pregnancy exposure cases:
+   - Serious: 11 days
+   - Non-serious: 30 days
+   - Non-interventional: 60 days
+4. Follow-up information for serious cases must be reported within 11 days.
+5. Counterfeit or tampering cases must be reported within 11 days.
+
+If reporting exceeds these timelines, it is considered a deviation.

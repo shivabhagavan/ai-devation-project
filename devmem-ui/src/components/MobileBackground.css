@@ -1,0 +1,17 @@
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes sparkle {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-100vh) rotate(360deg); }
+}
+
+.mobile-bg::before {
+  animation: float 6s ease-in-out infinite;
+}
+
+.mobile-bg::after {
+  animation: sparkle 4s linear infinite;
+}

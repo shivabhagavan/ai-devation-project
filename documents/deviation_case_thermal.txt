@@ -1,0 +1,13 @@
+Deviation Case 2024-045
+
+During tablet coating, temperature increased to 80°C exceeding the limit of 75°C.
+The deviation was detected by the process monitoring system.
+
+Impact:
+Potential degradation of active ingredient.
+
+Corrective Action:
+Batch quarantined and laboratory testing performed.
+
+Preventive Action:
+Temperature alarm thresholds recalibrated.

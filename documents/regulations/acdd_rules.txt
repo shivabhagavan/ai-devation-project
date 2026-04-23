@@ -1,0 +1,17 @@
+Assignable Cause Detail Descriptor (ACDD)
+
+Definition:
+A source document or adverse event information was received but was not actioned appropriately.
+
+Examples:
+- Information missed in mailbox
+- Email sent to wrong person
+- Document not attached to correct case
+- Translation delay
+- Mailbox not checked
+- Mis-handled documents
+
+In these situations:
+Assignable Cause Category: Process Deviation
+Assignable Cause Detail: Case Receipt Error
+Assignable Cause Detail Descriptor: Mis-handled Documents
