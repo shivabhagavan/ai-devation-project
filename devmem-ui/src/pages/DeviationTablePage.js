@@ -76,7 +76,7 @@ function DeviationTablePage() {
 
   const fetchDeviations = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/deviations');
+      const response = await axios.get('http:https://gray-pond-02c148a10.7.azurestaticapps.net');
       setDeviations(response.data);
       setLoading(false);
     } catch (error) {

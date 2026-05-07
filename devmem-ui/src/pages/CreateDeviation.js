@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import BASE_URL from "../api";   // ✅ ADDED
 import { Box, Paper, Typography, TextField, Button, Grid, Alert, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
@@ -27,7 +28,6 @@ const CreateDeviation = () => {
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Limit file size to 5MB
       if (file.size > 5 * 1024 * 1024) {
         setError('File size must be less than 5MB');
         return;
@@ -50,7 +50,6 @@ const CreateDeviation = () => {
     setError('');
     setSuccess('');
 
-    // Validate required fields
     if (!formData.productName || !formData.reportDate || !formData.narrativeObservation) {
       setError('Please fill in all required fields (Product Name, Report Date, Narrative Observation)');
       return;
@@ -58,17 +57,16 @@ const CreateDeviation = () => {
 
     setLoading(true);
     try {
-      // Convert file to base64 if selected
       let documentContent = null;
       let documentFilename = null;
-      
+
       if (selectedFile) {
         documentContent = await convertFileToBase64(selectedFile);
         documentFilename = selectedFile.name;
       }
 
-      // Use the AI analysis endpoint instead of manual creation
-      const response = await axios.post('http://localhost:8000/analyze-deviation', {
+      // ✅ FIXED API CALL
+      const response = await axios.post(`${BASE_URL}/analyze-deviation`, {
         event: formData.narrativeObservation,
         date: formData.reportDate,
         study: formData.productName,
@@ -82,6 +80,7 @@ const CreateDeviation = () => {
       setTimeout(() => {
         navigate('/investigations');
       }, 1500);
+
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to analyze deviation. Please try again.');
     } finally {
@@ -97,6 +96,7 @@ const CreateDeviation = () => {
       <Paper sx={{ p: 3, borderRadius: '12px', boxShadow: '0px 4px 20px rgba(0,0,0,0.08)' }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <TextField
@@ -109,6 +109,7 @@ const CreateDeviation = () => {
               required
             />
           </Grid>
+
           <Grid item xs={12} md={6}>
             <TextField
               label="Report Date"
@@ -122,6 +123,7 @@ const CreateDeviation = () => {
               required
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               label="Narrative Observation"
@@ -135,6 +137,7 @@ const CreateDeviation = () => {
               required
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               label="Investigation Details"
@@ -147,6 +150,7 @@ const CreateDeviation = () => {
               disabled={loading}
             />
           </Grid>
+
           <Grid item xs={12} md={6}>
             <TextField
               label="Root Cause"
@@ -159,6 +163,7 @@ const CreateDeviation = () => {
               disabled={loading}
             />
           </Grid>
+
           <Grid item xs={12} md={6}>
             <TextField
               label="Corrective Action"
@@ -171,6 +176,7 @@ const CreateDeviation = () => {
               disabled={loading}
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               label="Preventive Action"
@@ -183,43 +189,7 @@ const CreateDeviation = () => {
               disabled={loading}
             />
           </Grid>
-          <Grid item xs={12}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#333' }}>
-                Upload Supporting Document (Optional)
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#666', display: 'block', mb: 1.5 }}>
-                PDF, DOC, DOCX, or TXT files up to 5MB - visible to QA and Approver
-              </Typography>
-              <input
-                type="file"
-                id="deviation-file-input"
-                onChange={handleFileSelect}
-                disabled={loading}
-                accept=".pdf,.doc,.docx,.txt"
-                style={{ display: 'none' }}
-              />
-              <label htmlFor="deviation-file-input" style={{ display: 'block' }}>
-                <Button
-                  variant="outlined"
-                  component="span"
-                  startIcon={<CloudUploadIcon />}
-                  fullWidth
-                  disabled={loading}
-                  sx={{
-                    color: selectedFile ? '#4CAF50' : '#2F80ED',
-                    borderColor: selectedFile ? '#4CAF50' : '#2F80ED',
-                    '&:hover': {
-                      borderColor: selectedFile ? '#4CAF50' : '#1a5dc7',
-                      backgroundColor: selectedFile ? 'rgba(76, 175, 80, 0.05)' : 'rgba(47, 128, 237, 0.05)'
-                    }
-                  }}
-                >
-                  {selectedFile ? `✓ ${selectedFile.name}` : 'Choose File'}
-                </Button>
-              </label>
-            </Box>
-          </Grid>
+
           <Grid item xs={12}>
             <Button
               variant="contained"
@@ -229,27 +199,14 @@ const CreateDeviation = () => {
               sx={{
                 bgcolor: '#2F80ED',
                 '&:hover': { bgcolor: '#1a5dc7' },
-                '&:disabled': { bgcolor: '#ccc' },
                 height: 48,
-                borderRadius: '10px',
-                textTransform: 'none',
-                fontSize: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 1
+                borderRadius: '10px'
               }}
             >
-              {loading ? (
-                <>
-                  <CircularProgress size={20} sx={{ color: '#fff' }} />
-                  Creating Deviation...
-                </>
-              ) : (
-                'Submit for Quality Review'
-              )}
+              {loading ? 'Processing...' : 'Submit for Quality Review'}
             </Button>
           </Grid>
+
         </Grid>
       </Paper>
     </Box>

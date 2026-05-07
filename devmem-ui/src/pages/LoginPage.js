@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import BASE_URL from "../api";
 import {
   Box,
   Card,
@@ -35,8 +36,7 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/auth/login', {
-        username,
+     const response = await axios.post(`${BASE_URL}/auth/login`, {
         password,
         role: personnelContext
       });

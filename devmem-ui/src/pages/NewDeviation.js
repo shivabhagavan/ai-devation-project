@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { TextField, Button, Typography, Paper, Box, Grid } from "@mui/material";
-import Result from "./Result";
+import Result from "./result";
+
+// 🔥 Backend URL (update if needed)
+const API_BASE_URL = "https://gray-pond-02c148a10.7.azurestaticapps.net";
 
 function NewDeviation() {
   const [event, setEvent] = useState("");
@@ -12,21 +15,27 @@ function NewDeviation() {
   const [result, setResult] = useState(null);
 
   const handleSubmit = async () => {
-    const data = {
-      event,
-      date,
-      study,
-      detection_method: detection,
-      immediate_action: action,
-    };
+    try {
+      const data = {
+        event,
+        date,
+        study,
+        detection_method: detection,
+        immediate_action: action,
+      };
 
-    const response = await axios.post(
-      "http://127.0.0.1:8000/analyze-deviation",
-      data
-    );
+      const response = await axios.post(
+        `${API_BASE_URL}/analyze-deviation`,
+        data,
+        { timeout: 10000 }
+      );
 
-    console.log(response.data);
-    setResult(response.data);
+      console.log(response.data);
+      setResult(response.data);
+
+    } catch (err) {
+      console.error("API Error:", err);
+    }
   };
 
   return (
@@ -97,7 +106,6 @@ function NewDeviation() {
         </Button>
       </Paper>
 
-      {/* SHOW RESULT */}
       {result && <Result result={result} />}
     </Box>
   );
