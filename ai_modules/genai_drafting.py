@@ -4,89 +4,112 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# ---------------------------------------
+# SAFE OPENAI CLIENT
+# ---------------------------------------
+def get_client():
+    api_key = os.getenv("OPENAI_API_KEY")
 
+    if not api_key:
+        print("⚠️ OPENAI_API_KEY not found. Memo will use fallback.")
+        return None
+
+    return OpenAI(api_key=api_key)
+
+
+# ---------------------------------------
+# MEMO GENERATOR
+# ---------------------------------------
 def draft_deviation_memo(deviation_input, analysis, data):
     """
-    Generate formal regulatory deviation memo using deviation input, analysis, and data.
+    Generate formal regulatory deviation memo
     """
+    client = get_client()
+
     # Extract risk assessment with fallback
     risk_assessment = analysis.get('risk_assessment', {})
     patient_safety = risk_assessment.get('patient_safety', 'Medium')
     regulatory_compliance = risk_assessment.get('regulatory_compliance', 'Medium')
     data_integrity = risk_assessment.get('data_integrity', 'Medium')
     product_quality = risk_assessment.get('product_quality', 'Medium')
-    
-    prompt = f"""
-You are a senior GxP regulatory writer with expertise in pharmaceutical deviation documentation.
 
-Write a professional deviation memo using the following structure. Fill in ALL available information - do NOT use placeholders like [Insert Date] or [Insert Recipient]. Use the provided deviation details to populate the memo. Do NOT include "To:" or "From:" headers.
-
-IMPORTANT: In the "Investigation Summary" section, you MUST include ALL of the following risk assessments explicitly:
-- Patient Safety Risk: {patient_safety}
-- Regulatory Compliance Risk: {regulatory_compliance}
-- Data Integrity Risk: {data_integrity}
-- Product Quality Risk: {product_quality}
-
-Do NOT write "N/A" for any of these - use the provided values above.
-
-DEVIATION MEMO
+    # 🚨 FALLBACK IF NO OPENAI
+    if client is None:
+        return f"""DEVIATION MEMO
 
 Date: {data.get('date', 'Current Date')}
 Subject: Deviation Memo for {deviation_input}
 Deviation Number: {data.get('id', 'TBD')}
 
 1. Deviation Description
+{deviation_input}
+
 2. Immediate Action Taken
+Initial containment actions were performed as per SOP.
+
 3. Investigation Summary
-   - Severity: {analysis.get('severity', 'Unknown')}
-   - Patient Safety Risk: {patient_safety}
-   - Regulatory Compliance Risk: {regulatory_compliance}
-   - Data Integrity Risk: {data_integrity}
-   - Product Quality Risk: {product_quality}
+Severity: {analysis.get('severity', 'Unknown')}
+Patient Safety Risk: {patient_safety}
+Regulatory Compliance Risk: {regulatory_compliance}
+Data Integrity Risk: {data_integrity}
+Product Quality Risk: {product_quality}
+
 4. Root Cause Analysis
+{', '.join(analysis.get('probable_root_causes', ['Under investigation']))}
+
 5. Corrective Actions
+{', '.join(analysis.get('corrective_actions', ['To be defined']))}
+
 6. Preventive Actions
+{', '.join(analysis.get('preventive_actions', ['To be defined']))}
+
 7. Conclusion
+The deviation is being managed as per GxP requirements.
+"""
 
-DEVIATION DETAILS:
-- Event: {deviation_input}
-- Date: {data.get('date', 'Unknown')}
-- Study/Product: {data.get('study', 'Unknown')}
-- Severity: {analysis.get('severity', 'Unknown')}
-- Root Causes: {', '.join(analysis.get('probable_root_causes', []))}
-- Corrective Actions: {', '.join(analysis.get('corrective_actions', []))}
-- Preventive Actions: {', '.join(analysis.get('preventive_actions', []))}
-- Investigation Details: Process Point ({analysis.get('investigation', {}).get('process_point', 'N/A')}), Cause Category ({analysis.get('investigation', {}).get('cause_category', 'N/A')}), Functional Area ({analysis.get('investigation', {}).get('functional_area', 'N/A')})
+    prompt = f"""
+You are a senior GxP regulatory writer.
 
-RULES:
-- Do NOT introduce new facts or speculate
-- Use formal regulatory language
-- Write in inspection-ready format
-- Output plain text only (no markdown)
-- Fill in ALL information using the provided details
-- Do NOT use any placeholders or [Insert ...] text
-- Reference the provided analysis data only
-- CRITICAL: Never use "N/A" for risk assessment fields - always use the provided risk levels (Low, Medium, or High)
+Write a deviation memo.
 
-DEVIATION MEMO:
+Deviation:
+{deviation_input}
+
+Severity: {analysis.get('severity')}
+Patient Safety Risk: {patient_safety}
+Regulatory Compliance Risk: {regulatory_compliance}
+Data Integrity Risk: {data_integrity}
+Product Quality Risk: {product_quality}
+
+Root Causes: {analysis.get('probable_root_causes')}
+Corrective Actions: {analysis.get('corrective_actions')}
+Preventive Actions: {analysis.get('preventive_actions')}
 """
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a senior GxP regulatory writer. Write formal, inspection-ready deviation memos."},
+                {"role": "system", "content": "Write formal deviation memo. No markdown."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=1500
+            max_tokens=1200
         )
 
         memo = response.choices[0].message.content.strip()
-        print("✅ Deviation memo drafted successfully")
+        print("✅ Memo generated")
         return memo
 
     except Exception as e:
-        print(f"❌ Memo drafting error: {e}")
-        return f"Deviation Memo\n\nDeviation: {deviation_input}\n\nSeverity: {analysis.get('severity', 'Unknown')}\n\nInvestigation in progress."
+        print(f"❌ Memo AI error: {e}")
+
+        # 🚨 SAFE FALLBACK
+        return f"""DEVIATION MEMO
+
+Deviation: {deviation_input}
+
+Severity: {analysis.get('severity', 'Unknown')}
+
+Investigation ongoing. Manual review required.
+"""
