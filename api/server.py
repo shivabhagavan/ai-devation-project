@@ -1,16 +1,16 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-# 🔥 FIX FOR AZURE IMPORT PATH
+# 🔥 FIX IMPORT PATH FOR AZURE / LOCAL
 import sys
 import os
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(file), ".."))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# ✅ Correct imports
-from deviation_pipeline import run_deviation_pipeline
+# ✅ IMPORTS
+from api.deviation_pipeline import run_deviation_pipeline
 from ai_modules.genai_reasoning import generate_preventive_actions
 
 from database.db import engine, SessionLocal
@@ -21,30 +21,21 @@ from datetime import datetime
 
 app = FastAPI()
 
-# create tables automatically
+# ✅ CREATE TABLES
 Base.metadata.create_all(bind=engine)
 
-def ensure_schema_columns():
-    with engine.connect() as connection:
-        existing_columns = {
-            row[1] for row in connection.exec_driver_sql("PRAGMA table_info(deviations)").fetchall()
-        }
-        if "signatures" not in existing_columns:
-            connection.exec_driver_sql("ALTER TABLE deviations ADD COLUMN signatures TEXT DEFAULT '{}' ")
-            connection.commit()
-
-ensure_schema_columns()
-
-# ✅ CORS FIX
+# ✅ CORS CONFIG (FIXED)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[""],
+    allow_origins=["*"],   # change to frontend URL in production
     allow_credentials=True,
-    allow_methods=[""],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ TEST ROUTES
+# ---------------------------------------------------
+# TEST ROUTES
+# ---------------------------------------------------
 @app.get("/")
 def home():
     return {"status": "API is running 🚀"}
@@ -53,28 +44,41 @@ def home():
 def health():
     return {"message": "working fine ✅"}
 
+# ---------------------------------------------------
+# HELPER FUNCTION
+# ---------------------------------------------------
+def safe_json(data, default):
+    try:
+        return json.dumps(data if data else default)
+    except Exception:
+        return json.dumps(default)
 
 # ---------------------------------------------------
-# Analyze Deviation Endpoint
+# ANALYZE DEVIATION
 # ---------------------------------------------------
 @app.post("/analyze-deviation")
 def analyze_deviation(data: dict):
     db = SessionLocal()
     try:
-        pipeline_result = run_deviation_pipeline(data)
+        result = run_deviation_pipeline(data)
 
-        analysis = pipeline_result["analysis"]
-        draft = pipeline_result["draft"]
+        analysis = result.get("analysis", {})
+        draft = result.get("draft", "")
+
+        severity = analysis.get("severity", "Medium")
+        root_causes = analysis.get("probable_root_causes", [])
+        corrective = analysis.get("corrective_actions", [])
+        preventive = analysis.get("preventive_actions", [])
 
         new_dev = Deviation(
             event=data.get("event", ""),
             date=data.get("date", ""),
             study=data.get("study", ""),
-            severity=analysis["severity"],
-            root_causes=json.dumps(analysis["probable_root_causes"]),
-            corrective_actions=json.dumps(analysis["corrective_actions"]),
-            preventive_actions=json.dumps(analysis["preventive_actions"]),
-            capa=json.dumps(analysis["corrective_actions"] + analysis["preventive_actions"]),
+            severity=severity,
+            root_causes=safe_json(root_causes, []),
+            corrective_actions=safe_json(corrective, []),
+            preventive_actions=safe_json(preventive, []),
+            capa=safe_json(corrective + preventive, []),
             deviation_memo_draft=draft,
             status="Draft",
             version=1,
@@ -103,8 +107,9 @@ def analyze_deviation(data: dict):
     finally:
         db.close()
 
-
-# ✅ CORRECT MAIN BLOCK
-if name == "main":
+# ---------------------------------------------------
+# RUN SERVER (LOCAL ONLY)
+# ---------------------------------------------------
+if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("api.server:app", host="0.0.0.0", port=8000)
+    uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=True)
