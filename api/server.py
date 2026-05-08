@@ -1,19 +1,18 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-# 🔥 FIX FOR AZURE IMPORT PATH (IMPORTANT)
+# 🔥 FIX FOR AZURE IMPORT PATH
 import sys
 import os
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(file), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# ✅ now imports will work
-from workflows.deviation_pipeline import run_deviation_pipeline
+# ✅ Correct imports
+from deviation_pipeline import run_deviation_pipeline
 from ai_modules.genai_reasoning import generate_preventive_actions
 
-# Database imports
 from database.db import engine, SessionLocal
 from database.models import Base, Deviation
 
@@ -36,45 +35,24 @@ def ensure_schema_columns():
 
 ensure_schema_columns()
 
-# allow frontend requests
+# ✅ CORS FIX
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[""],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=[""],
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------
-# BASIC TEST ROUTE (VERY IMPORTANT FOR DEBUG)
-# ---------------------------------------------------
+# ✅ TEST ROUTES
 @app.get("/")
 def home():
     return {"status": "API is running 🚀"}
 
-# Helper function to update history
-def update_history(deviation, action, new_status, comments=""):
-    history = json.loads(deviation.history) if deviation.history else []
-    history.append({
-        "timestamp": datetime.utcnow().isoformat(),
-        "action": action,
-        "status": new_status,
-        "version": deviation.version + 1,
-        "comments": comments
-    })
-    deviation.history = json.dumps(history)
-    deviation.version += 1
-    deviation.status = new_status
+@app.get("/health")
+def health():
+    return {"message": "working fine ✅"}
 
-def normalize_signatures(raw_signatures):
-    if not raw_signatures:
-        return {}
-    if isinstance(raw_signatures, dict):
-        return raw_signatures
-    try:
-        return json.loads(raw_signatures)
-    except Exception:
-        return {}
 
 # ---------------------------------------------------
 # Analyze Deviation Endpoint
@@ -126,14 +104,7 @@ def analyze_deviation(data: dict):
         db.close()
 
 
-# ---------------------------------------------------
-# SIMPLE CHECK ROUTE
-# ---------------------------------------------------
-@app.get("/health")
-def health():
-    return {"message": "working fine ✅"}
-
-
-if __name__ == "__main__":
+# ✅ CORRECT MAIN BLOCK
+if name == "main":
     import uvicorn
     uvicorn.run("api.server:app", host="0.0.0.0", port=8000)
