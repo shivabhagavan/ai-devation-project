@@ -1,5 +1,5 @@
 // Base URL of your deployed backend (Azure App Service)
-const BASE_URL = "https://gray-pond-02c148a10.7.azurestaticapps.net";
+const BASE_URL = "https://devmem-api-ach7bfach7bjc9au.canadacentral-01.azurewebsites.net"
 
 // Helper functions (optional but recommended)
 export const get = (url, options = {}) => {

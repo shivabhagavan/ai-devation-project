@@ -11,8 +11,6 @@ if BASE_DIR not in sys.path:
 
 # ✅ IMPORTS
 from api.deviation_pipeline import run_deviation_pipeline
-from ai_modules.genai_reasoning import generate_preventive_actions
-
 from database.db import engine, SessionLocal
 from database.models import Base, Deviation
 
@@ -24,10 +22,10 @@ app = FastAPI()
 # ✅ CREATE TABLES
 Base.metadata.create_all(bind=engine)
 
-# ✅ CORS CONFIG (FIXED)
+# ✅ CORS CONFIG (IMPORTANT FOR FRONTEND)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # change to frontend URL in production
+    allow_origins=["*"],  # 🔒 change to frontend URL later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,7 +43,7 @@ def health():
     return {"message": "working fine ✅"}
 
 # ---------------------------------------------------
-# HELPER FUNCTION
+# SAFE JSON HELPER
 # ---------------------------------------------------
 def safe_json(data, default):
     try:
@@ -103,6 +101,56 @@ def analyze_deviation(data: dict):
 
     except Exception as e:
         db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+# ---------------------------------------------------
+# DASHBOARD METRICS
+# ---------------------------------------------------
+@app.get("/dashboard-metrics")
+def get_dashboard_metrics():
+    db = SessionLocal()
+    try:
+        total = db.query(Deviation).count()
+        high = db.query(Deviation).filter(Deviation.severity == "High").count()
+        medium = db.query(Deviation).filter(Deviation.severity == "Medium").count()
+        low = db.query(Deviation).filter(Deviation.severity == "Low").count()
+
+        return {
+            "total_deviations": total,
+            "high": high,
+            "medium": medium,
+            "low": low
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+# ---------------------------------------------------
+# GET ALL DEVIATIONS
+# ---------------------------------------------------
+@app.get("/deviations")
+def get_deviations():
+    db = SessionLocal()
+    try:
+        deviations = db.query(Deviation).order_by(Deviation.created_at.desc()).all()
+
+        result = []
+        for d in deviations:
+            result.append({
+                "id": d.id,
+                "event": d.event,
+                "date": d.date,
+                "severity": d.severity,
+                "status": d.status
+            })
+
+        return result
+
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
