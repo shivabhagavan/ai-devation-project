@@ -9,6 +9,7 @@ import {
   Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import QuickStats from '../../components/Common/QuickStats';
 import DeviationTable from '../../components/Common/DeviationTable';
@@ -25,8 +26,7 @@ const OwnerDashboard = () => {
     // Fetch deviations from backend with owner role
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=DM Owner');
-        const data = await response.json();
+        const data = await get('/deviations?role=DM Owner');
         setDeviations(data || []);
       } catch (err) {
         console.error('Error fetching deviations:', err);

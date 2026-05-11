@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { get } from '../api';
 import {
   Box,
   Drawer,
@@ -45,8 +45,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-// 🔥 Backend URL
-const API_BASE_URL = "https://gray-pond-02c148a10.7.azurestaticapps.net";
+
 
 const drawerWidth = 260;
 const pieColors = ['#2F80ED', '#FFA500', '#28A745', '#6F42C1'];
@@ -65,13 +64,9 @@ function OwnerWorkspace() {
 
   const fetchDashboardData = async () => {
     try {
-      // 🔹 Metrics
-      const metricsResponse = await axios.get(
-        `${API_BASE_URL}/dashboard-metrics`,
-        { timeout: 10000 }
-      );
 
-      const metrics = metricsResponse.data;
+      // 🔹 Metrics
+      const metrics = await get('/dashboard-metrics');
 
       const updatedCards = [
         { label: 'My Total Cases', value: metrics.total_deviations, icon: <FolderOpen sx={{ color: '#2F80ED' }} />, unit: '' },
@@ -83,14 +78,11 @@ function OwnerWorkspace() {
 
       setStatsCards(updatedCards);
 
-      // 🔹 Charts
-      const chartResponse = await axios.get(
-        `${API_BASE_URL}/dashboard/chart-data`,
-        { timeout: 10000 }
-      );
 
-      setLineData(chartResponse.data.line_chart || []);
-      setPieData(chartResponse.data.pie_chart || []);
+      // 🔹 Charts
+      const chartData = await get('/dashboard/chart-data');
+      setLineData(chartData.line_chart || []);
+      setPieData(chartData.pie_chart || []);
 
     } catch (error) {
       console.error('Dashboard API Error:', error);

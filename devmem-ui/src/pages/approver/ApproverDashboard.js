@@ -8,6 +8,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import QuickStats from '../../components/Common/QuickStats';
 import { COLORS } from '../../styles/theme';
@@ -48,8 +49,7 @@ const ApproverDashboard = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=Approver');
-        const data = await response.json();
+        const data = await get('/deviations?role=Approver');
         setDeviations(data || []);
         updatePieData(data || []);
       } catch (err) {

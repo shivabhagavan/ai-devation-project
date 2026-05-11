@@ -1,52 +1,50 @@
-// Base URL of your deployed backend (Azure App Service)
-const BASE_URL = "https://devmem-api-ach7bfach7bjc9au.canadacentral-01.azurewebsites.net"
+// Base URL of backend
+const BASE_URL = "https://devmem-api-ach7bfach7bjc9au.canadacentral-01.azurewebsites.net";
 
-// Helper functions (optional but recommended)
-export const get = (url, options = {}) => {
-  return fetch(`${BASE_URL}${url}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    ...options,
-  });
+// ✅ Common fetch handler
+const request = async (url, options = {}) => {
+  try {
+    const response = await fetch(`${BASE_URL}${url}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    // 🔥 HANDLE NON-200 RESPONSES
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`API Error: ${response.status} - ${text}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("🔥 API FAILED:", error);
+    throw error;
+  }
 };
 
-export const post = (url, body, options = {}) => {
-  return fetch(`${BASE_URL}${url}`, {
+// ✅ API methods
+export const get = (url, options = {}) =>
+  request(url, { method: "GET", ...options });
+
+export const post = (url, body, options = {}) =>
+  request(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
     body: JSON.stringify(body),
     ...options,
   });
-};
 
-export const put = (url, body, options = {}) => {
-  return fetch(`${BASE_URL}${url}`, {
+export const put = (url, body, options = {}) =>
+  request(url, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
     body: JSON.stringify(body),
     ...options,
   });
-};
 
-export const del = (url, options = {}) => {
-  return fetch(`${BASE_URL}${url}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    ...options,
-  });
-};
+export const del = (url, options = {}) =>
+  request(url, { method: "DELETE", ...options });
 
-// Default export (for direct usage if needed)
 export default BASE_URL;

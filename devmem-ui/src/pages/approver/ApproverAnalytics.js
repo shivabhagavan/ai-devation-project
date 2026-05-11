@@ -6,6 +6,7 @@ import {
   Grid,
 } from '@mui/material';
 import MainLayout from '../../components/Layout/MainLayout';
+import { get } from '../../api';
 import QuickStats from '../../components/Common/QuickStats';
 import { COLORS } from '../../styles/theme';
 
@@ -15,8 +16,7 @@ const ApproverAnalytics = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=Approver');
-        const data = await response.json();
+        const data = await get('/deviations?role=Approver');
         setDeviations(data || []);
       } catch (err) {
         setDeviations([]);

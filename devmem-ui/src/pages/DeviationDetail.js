@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import BASE_URL from "../api";   // ✅ ADDED
+import { get, put } from "../api";
 import { authService } from '../utils/auth';
 import {
   Box,
@@ -38,12 +37,9 @@ const DeviationDetail = () => {
     try {
       setLoading(true);
 
-      // ✅ FIXED
-      const response = await axios.get(`${BASE_URL}/deviation/${id}`, {
-        timeout: 10000
-      });
 
-      let data = response.data;
+      // ✅ FIXED
+      const data = await get(`/deviation/${id}`);
 
       if (typeof data.root_cause === 'string') {
         try { data.root_cause = JSON.parse(data.root_cause); } catch {}
@@ -75,17 +71,16 @@ const DeviationDetail = () => {
     setSignatureSaving(true);
 
     try {
+
       // ✅ FIXED
-      const response = await axios.put(
-        `${BASE_URL}/deviation/${id}/signature`,
+      const response = await put(
+        `/deviation/${id}/signature`,
         {
           role: currentUser.role,
           name: signatureDraft.trim(),
-        },
-        { timeout: 10000 }
+        }
       );
-
-      setSignatures(response.data.signatures || {});
+      setSignatures(response.signatures || {});
 
     } catch (err) {
       setError(

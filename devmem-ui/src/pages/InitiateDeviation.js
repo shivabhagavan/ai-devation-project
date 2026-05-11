@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import axios from 'axios';
+import { post } from '../api';
 import {
   Box,
   Card,
@@ -162,13 +162,13 @@ import { useNavigate } from 'react-router-dom';
         };
 
         // Call FastAPI backend
-        const response = await axios.post('http://localhost:8000/analyze-deviation', payload);
+        const response = await post('/analyze-deviation', payload);
         setSubmitting(false);
         // On success, redirect to My Deviations or show a message
         navigate('/my-deviations');
       } catch (error) {
         setSubmitting(false);
-        alert('Failed to submit deviation: ' + (error.response?.data?.detail || error.message));
+        alert('Failed to submit deviation: ' + (error.message));
       }
     };
 

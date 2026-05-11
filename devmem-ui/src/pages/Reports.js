@@ -11,9 +11,8 @@ import {
   Button
 } from "@mui/material";
 import MainLayout from "../components/MainLayout";
+import { get } from "../api";
 
-// 🔥 Backend URL
-const API_BASE_URL = "https://gray-pond-02c148a10.7.azurestaticapps.net";
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
@@ -21,8 +20,7 @@ export default function Reports() {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/deviations`);
-        const data = await res.json();
+        const data = await get('/deviations');
         setReports(data || []);
       } catch (err) {
         console.error("Reports API Error:", err);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { get } from '../api';
 import {
   Box,
   Drawer,
@@ -76,8 +76,8 @@ function DeviationTablePage() {
 
   const fetchDeviations = async () => {
     try {
-      const response = await axios.get('http:https://gray-pond-02c148a10.7.azurestaticapps.net');
-      setDeviations(response.data);
+      const data = await get('/deviations');
+      setDeviations(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching deviations:', error);

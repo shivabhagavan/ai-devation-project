@@ -11,6 +11,7 @@ import {
   TextField,
 } from '@mui/material';
 import MainLayout from '../../components/Layout/MainLayout';
+import { get, put } from '../../api';
 import DeviationTable from '../../components/Common/DeviationTable';
 import { COLORS } from '../../styles/theme';
 import { authService } from '../../utils/auth';
@@ -32,9 +33,8 @@ const FinalMemo = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations');
-        const data = await response.json();
-        const closed = data.filter((d) => d.status === 'Closed') || [];
+        const data = await get('/deviations');
+        const closed = (data || []).filter((d) => d.status === 'Closed');
         setDeviations(closed);
       } catch (err) {
         setDeviations([
@@ -60,8 +60,7 @@ const FinalMemo = () => {
     
     // Fetch signatures for this deviation
     try {
-      const response = await fetch(`http://localhost:8000/deviation/${id}`);
-      const data = await response.json();
+      const data = await get(`/deviation/${id}`);
       setSignatures(data.signatures || {});
     } catch (err) {
       console.error('Error fetching signatures:', err);
@@ -83,15 +82,10 @@ const FinalMemo = () => {
 
     setSignatureSaving(true);
     try {
-      const response = await fetch(`http://localhost:8000/deviation/${selectedDeviation.id}/signature`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          role: currentUser.role,
-          name: signatureDraft.trim(),
-        }),
+      const data = await put(`/deviation/${selectedDeviation.id}/signature`, {
+        role: currentUser.role,
+        name: signatureDraft.trim(),
       });
-      const data = await response.json();
       setSignatures(data.signatures || {});
     } catch (err) {
       console.error('Error saving signature:', err);

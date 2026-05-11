@@ -11,6 +11,7 @@ import {
   Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import DeviationTable from '../../components/Common/DeviationTable';
 import StatusChip from '../../components/Common/StatusChip';
@@ -27,8 +28,7 @@ const MemoView = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations');
-        const data = await response.json();
+        const data = await get('/deviations');
         setDeviations(data || []);
       } catch (err) {
         setDeviations([
@@ -55,8 +55,7 @@ const MemoView = () => {
 
   const handleViewMemo = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/deviation/${id}`);
-      const data = await response.json();
+      const data = await get(`/deviation/${id}`);
       setSelectedDeviation(data);
     } catch (err) {
       console.error('Error fetching deviation:', err);

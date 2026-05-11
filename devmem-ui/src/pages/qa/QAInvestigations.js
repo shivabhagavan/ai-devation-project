@@ -19,6 +19,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../components/Layout/MainLayout';
 import { COLORS } from '../../styles/theme';
+import { get, put } from '../../api';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -43,8 +44,7 @@ const QAInvestigations = () => {
 
   const fetchDeviations = async () => {
     try {
-      const response = await fetch('http://localhost:8000/deviations?role=QA Reviewer');
-      const data = await response.json();
+      const data = await get('/deviations?role=QA Reviewer');
       setDeviations(data || []);
     } catch (err) {
       console.error('Error fetching deviations:', err);
@@ -59,8 +59,7 @@ const QAInvestigations = () => {
     setActionResult(null);
     setLoadingDetail(true);
     try {
-      const response = await fetch(`http://localhost:8000/deviation/${id}`);
-      const data = await response.json();
+      const data = await get(`/deviation/${id}`);
       setDeviationDetail(data);
     } catch (err) {
       console.error('Error fetching deviation detail:', err);
@@ -72,11 +71,7 @@ const QAInvestigations = () => {
   const handleApprove = async () => {
     setActionLoading(true);
     try {
-      await fetch(`http://localhost:8000/deviation/${selectedDeviation.id}/approve`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'QA', comments: 'QA approved and forwarded to approver' }),
-      });
+      await put(`/deviation/${selectedDeviation.id}/approve`, { role: 'QA', comments: 'QA approved and forwarded to approver' });
       setActionResult({ type: 'success', message: 'Deviation approved and sent for final approval!' });
       setSelectedDeviation(null);
       setDeviationDetail(null);
@@ -91,11 +86,7 @@ const QAInvestigations = () => {
   const handleReject = async () => {
     setActionLoading(true);
     try {
-      await fetch(`http://localhost:8000/deviation/${selectedDeviation.id}/reject`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'QA', comments: rejectReason }),
-      });
+      await put(`/deviation/${selectedDeviation.id}/reject`, { role: 'QA', comments: rejectReason });
       setActionResult({ type: 'warning', message: 'Deviation rejected and sent back to owner for rework.' });
       setRejectDialogOpen(false);
       setRejectReason('');

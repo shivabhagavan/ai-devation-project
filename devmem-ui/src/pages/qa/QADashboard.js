@@ -9,6 +9,7 @@ import {
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import QuickStats from '../../components/Common/QuickStats';
 import DeviationTable from '../../components/Common/DeviationTable';
@@ -23,8 +24,7 @@ const QADashboard = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=QA Reviewer');
-        const data = await response.json();
+        const data = await get('/deviations?role=QA Reviewer');
         setDeviations(data || []);
       } catch (err) {
         setDeviations([

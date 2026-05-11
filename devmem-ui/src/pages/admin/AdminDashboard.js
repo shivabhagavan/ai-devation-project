@@ -14,6 +14,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import QuickStats from '../../components/Common/QuickStats';
 import { COLORS } from '../../styles/theme';
@@ -29,8 +30,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/dashboard-metrics');
-        const data = await response.json();
+        const data = await get('/dashboard-metrics');
         setSystemStats([
           {
             label: 'Total Deviations',
@@ -89,8 +89,7 @@ const AdminDashboard = () => {
 
     const fetchDeviationsList = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=System Admin');
-        const data = await response.json();
+        const data = await get('/deviations?role=System Admin');
         setDeviations(data || []);
       } catch (err) {
         setDeviations([]);

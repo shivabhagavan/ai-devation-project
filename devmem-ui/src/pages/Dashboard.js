@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
   Grid,
   Paper,
   Typography,
@@ -13,7 +12,9 @@ import {
   Divider
 } from "@mui/material";
 import MainLayout from "../components/MainLayout";
-import BASE_URL from "../api";   // ✅ ADDED
+
+// ✅ IMPORT API HELPERS (IMPORTANT)
+import { get } from "../api";
 
 const metricColors = ["#2563eb", "#dc2626", "#f59e42", "#22c55e"];
 
@@ -29,9 +30,8 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // ✅ FIXED API CALL
-        const metricsRes = await fetch(`${BASE_URL}/dashboard-metrics`);
-        const metricsData = await metricsRes.json();
+        // ✅ CLEAN API CALL
+        const metricsData = await get("/dashboard-metrics");
 
         setMetrics({
           total: metricsData.total_deviations || 0,
@@ -40,14 +40,13 @@ export default function Dashboard() {
           low: metricsData.low || 0
         });
 
-        // ✅ FIXED API CALL
-        const deviationsRes = await fetch(`${BASE_URL}/deviations`);
-        const deviationsData = await deviationsRes.json();
+        // ✅ CLEAN API CALL
+        const deviationsData = await get("/deviations");
 
         setRecent((deviationsData || []).slice(0, 5));
 
       } catch (err) {
-        console.error("Dashboard API Error:", err);
+        console.error("🔥 Dashboard API Error:", err);
       }
     };
 
@@ -77,7 +76,7 @@ export default function Dashboard() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {metricLabels.map((label, idx) => (
           <Grid item xs={12} sm={6} md={3} key={label}>
-            <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3, background: "#fff" }}>
+            <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
               <Typography variant="subtitle2" sx={{ color: "#64748b", mb: 1 }}>
                 {label}
               </Typography>
@@ -92,7 +91,7 @@ export default function Dashboard() {
         ))}
       </Grid>
 
-      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3, background: "#fff" }}>
+      <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
           Recent Deviations
         </Typography>

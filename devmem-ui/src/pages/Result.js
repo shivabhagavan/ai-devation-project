@@ -1,5 +1,5 @@
 import React from "react";
-import axios from "axios";
+import { put } from "../api";
 import {
   Typography,
   Grid,
@@ -11,8 +11,7 @@ import {
 } from "@mui/material";
 import MainLayout from "../components/MainLayout";
 
-// 🔥 Backend URL
-const API_BASE_URL = "https://gray-pond-02c148a10.7.azurestaticapps.net";
+
 
 export default function Result({ result }) {
   if (!result) return null;
@@ -29,11 +28,8 @@ export default function Result({ result }) {
     if (!result.id) return;
 
     try {
-      await axios.put(
-        `${API_BASE_URL}/close-deviation/${result.id}`,
-        {},
-        { timeout: 10000 }
-      );
+
+      await put(`/close-deviation/${result.id}`, {});
 
       alert("Deviation Closed");
       window.location.reload();
@@ -45,7 +41,7 @@ export default function Result({ result }) {
 
   const handleDownloadPDF = () => {
     window.open(
-      `${API_BASE_URL}/download-pdf/${result.id}`,
+      `/download-pdf/${result.id}`,
       "_blank"
     );
   };

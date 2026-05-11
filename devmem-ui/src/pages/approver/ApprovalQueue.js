@@ -17,6 +17,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get, put } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import { COLORS } from '../../styles/theme';
 import CheckIcon from '@mui/icons-material/Check';
@@ -44,8 +45,7 @@ const ApprovalQueue = () => {
 
   const fetchDeviations = async () => {
     try {
-      const response = await fetch('http://localhost:8000/deviations?role=Approver');
-      const data = await response.json();
+      const data = await get('/deviations?role=Approver');
       const pendingApproval = (data || []).filter((d) => d.status === 'Pending Approval');
       setDeviations(pendingApproval);
     } catch (err) {
@@ -61,8 +61,7 @@ const ApprovalQueue = () => {
     setActionResult(null);
     setLoadingDetail(true);
     try {
-      const response = await fetch(`http://localhost:8000/deviation/${id}`);
-      const data = await response.json();
+      const data = await get(`/deviation/${id}`);
       setDeviationDetail(data);
     } catch (err) {
       console.error('Error fetching deviation detail:', err);
@@ -74,11 +73,7 @@ const ApprovalQueue = () => {
   const handleApprove = async () => {
     setActionLoading(true);
     try {
-      await fetch(`http://localhost:8000/deviation/${selectedDeviation.id}/approve`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'Approver', comments: 'Final approval granted' }),
-      });
+      await put(`/deviation/${selectedDeviation.id}/approve`, { role: 'Approver', comments: 'Final approval granted' });
       setActionResult({ type: 'success', message: 'Deviation approved and closed successfully!' });
       setSelectedDeviation(null);
       setDeviationDetail(null);
@@ -93,11 +88,7 @@ const ApprovalQueue = () => {
   const handleReject = async () => {
     setActionLoading(true);
     try {
-      await fetch(`http://localhost:8000/deviation/${selectedDeviation.id}/reject`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'Approver', comments: rejectReason }),
-      });
+      await put(`/deviation/${selectedDeviation.id}/reject`, { role: 'Approver', comments: rejectReason });
       setActionResult({ type: 'warning', message: 'Deviation rejected and marked for rework.' });
       setRejectDialogOpen(false);
       setRejectReason('');

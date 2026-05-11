@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { get, put, del } from '../../api';
 import {
   Box,
   Typography,
@@ -44,10 +44,10 @@ const DraftReview = () => {
   useEffect(() => {
     const fetchDeviation = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/deviation/${id}`);
-        setDeviation(response.data);
-        setEditedMemo(response.data.deviation_memo_draft || '');
-        setAttachedFileName(response.data.document_filename || '');
+        const data = await get(`/deviation/${id}`);
+        setDeviation(data);
+        setEditedMemo(data.deviation_memo_draft || '');
+        setAttachedFileName(data.document_filename || '');
       } catch (err) {
         setError('Failed to load deviation details.');
       } finally {
@@ -74,7 +74,7 @@ const DraftReview = () => {
         });
       }
 
-      await axios.put(`http://localhost:8000/deviation/${id}/update-memo`, payload);
+      await put(`/deviation/${id}/update-memo`, payload);
       setDeviation((prev) => ({
         ...prev,
         deviation_memo_draft: editedMemo,
@@ -112,17 +112,17 @@ const DraftReview = () => {
           });
         }
 
-        await axios.put(`http://localhost:8000/deviation/${id}/update-memo`, payload);
+        await put(`/deviation/${id}/update-memo`, payload);
       }
 
       // Rejected items must be resubmitted through Owner -> QA flow
       if (deviation?.status === 'Owner Review' || deviation?.status === 'Rework Required') {
-        await axios.put(`http://localhost:8000/deviation/${id}/resubmit`, {
+        await put(`/deviation/${id}/resubmit`, {
           role: 'DM Owner',
           comments: 'Owner revised memo and resubmitted to QA',
         });
       } else {
-        await axios.put(`http://localhost:8000/deviation/${id}/send-for-review`, {
+        await put(`/deviation/${id}/send-for-review`, {
           comments: 'Owner submitted draft for QA review',
         });
       }
@@ -145,7 +145,7 @@ const DraftReview = () => {
     setDeleting(true);
     setError(null);
     try {
-      await axios.delete(`http://localhost:8000/deviation/${id}`);
+      await del(`/deviation/${id}`);
       navigate('/owner/investigations');
     } catch (err) {
       setError('Failed to delete draft deviation.');

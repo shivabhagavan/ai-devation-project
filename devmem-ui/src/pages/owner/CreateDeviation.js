@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { post } from '../../api';
 import {
   Box,
   Button,
@@ -93,14 +93,14 @@ const CreateDeviation = () => {
         document_content: documentContent,
       };
 
-      const response = await axios.post('http://localhost:8000/analyze-deviation', payload);
-      const deviationId = response.data.id;
+      const response = await post('/analyze-deviation', payload);
+      const deviationId = response.id;
       setSuccess(true);
       setTimeout(() => {
         navigate(`/owner/draft-review/${deviationId}`);
       }, 1500);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'An error occurred while creating the deviation');
+      setError(err.message || 'An error occurred while creating the deviation');
     } finally {
       setLoading(false);
     }

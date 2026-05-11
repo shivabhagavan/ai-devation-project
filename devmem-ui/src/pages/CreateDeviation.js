@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import BASE_URL from "../api";   // ✅ ADDED
-import { Box, Paper, Typography, TextField, Button, Grid, Alert, CircularProgress } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+
+// ✅ USE CENTRAL API
+import { post } from "../api";
+
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Alert
+} from '@mui/material';
 
 const CreateDeviation = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     productName: '',
     reportDate: '',
@@ -16,6 +26,7 @@ const CreateDeviation = () => {
     correctiveAction: '',
     preventiveAction: ''
   });
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,7 +52,7 @@ const CreateDeviation = () => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
+      reader.onerror = reject;
       reader.readAsDataURL(file);
     });
   };
@@ -51,11 +62,12 @@ const CreateDeviation = () => {
     setSuccess('');
 
     if (!formData.productName || !formData.reportDate || !formData.narrativeObservation) {
-      setError('Please fill in all required fields (Product Name, Report Date, Narrative Observation)');
+      setError('Please fill all required fields');
       return;
     }
 
     setLoading(true);
+
     try {
       let documentContent = null;
       let documentFilename = null;
@@ -65,24 +77,26 @@ const CreateDeviation = () => {
         documentFilename = selectedFile.name;
       }
 
-      // ✅ FIXED API CALL
-      const response = await axios.post(`${BASE_URL}/analyze-deviation`, {
+      // ✅ CLEAN API CALL
+      await post("/analyze-deviation", {
         event: formData.narrativeObservation,
         date: formData.reportDate,
         study: formData.productName,
-        detection_method: formData.detectionMethod || 'Manual reporting',
-        immediate_action: formData.immediateAction || 'Under investigation',
+        detection_method: "Manual reporting",
+        immediate_action: "Under investigation",
         document_filename: documentFilename,
         document_content: documentContent
       });
 
-      setSuccess('Deviation analyzed with AI successfully! Redirecting to investigations...');
+      setSuccess("✅ Deviation submitted successfully!");
+
       setTimeout(() => {
         navigate('/investigations');
       }, 1500);
 
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to analyze deviation. Please try again.');
+      console.error("🔥 CreateDeviation Error:", err);
+      setError(err.message || "Failed to analyze deviation");
     } finally {
       setLoading(false);
     }
@@ -93,9 +107,10 @@ const CreateDeviation = () => {
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
         Initiate Deviation
       </Typography>
-      <Paper sx={{ p: 3, borderRadius: '12px', boxShadow: '0px 4px 20px rgba(0,0,0,0.08)' }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+      <Paper sx={{ p: 3, borderRadius: 2 }}>
+        {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
@@ -104,8 +119,6 @@ const CreateDeviation = () => {
               fullWidth
               value={formData.productName}
               onChange={handleChange('productName')}
-              sx={{ mb: 2 }}
-              disabled={loading}
               required
             />
           </Grid>
@@ -118,8 +131,6 @@ const CreateDeviation = () => {
               value={formData.reportDate}
               onChange={handleChange('reportDate')}
               InputLabelProps={{ shrink: true }}
-              sx={{ mb: 2 }}
-              disabled={loading}
               required
             />
           </Grid>
@@ -132,61 +143,7 @@ const CreateDeviation = () => {
               rows={3}
               value={formData.narrativeObservation}
               onChange={handleChange('narrativeObservation')}
-              sx={{ mb: 2 }}
-              disabled={loading}
               required
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Investigation Details"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.investigationDetails}
-              onChange={handleChange('investigationDetails')}
-              sx={{ mb: 2 }}
-              disabled={loading}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Root Cause"
-              fullWidth
-              multiline
-              rows={2}
-              value={formData.rootCause}
-              onChange={handleChange('rootCause')}
-              sx={{ mb: 2 }}
-              disabled={loading}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Corrective Action"
-              fullWidth
-              multiline
-              rows={2}
-              value={formData.correctiveAction}
-              onChange={handleChange('correctiveAction')}
-              sx={{ mb: 2 }}
-              disabled={loading}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              label="Preventive Action"
-              fullWidth
-              multiline
-              rows={2}
-              value={formData.preventiveAction}
-              onChange={handleChange('preventiveAction')}
-              sx={{ mb: 2 }}
-              disabled={loading}
             />
           </Grid>
 
@@ -196,17 +153,10 @@ const CreateDeviation = () => {
               fullWidth
               onClick={handleSubmit}
               disabled={loading}
-              sx={{
-                bgcolor: '#2F80ED',
-                '&:hover': { bgcolor: '#1a5dc7' },
-                height: 48,
-                borderRadius: '10px'
-              }}
             >
-              {loading ? 'Processing...' : 'Submit for Quality Review'}
+              {loading ? "Processing..." : "Submit"}
             </Button>
           </Grid>
-
         </Grid>
       </Paper>
     </Box>

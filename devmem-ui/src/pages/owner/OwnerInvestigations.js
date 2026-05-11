@@ -11,6 +11,7 @@ import {
   Stack,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { get, del } from '../../api';
 import MainLayout from '../../components/Layout/MainLayout';
 import DeviationTable from '../../components/Common/DeviationTable';
 import { COLORS } from '../../styles/theme';
@@ -30,8 +31,7 @@ const OwnerInvestigations = () => {
     // Fetch deviations from backend with owner role
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=DM Owner');
-        const data = await response.json();
+        const data = await get('/deviations?role=DM Owner');
         setDeviations(data || []);
       } catch (err) {
         console.error('Error fetching deviations:', err);
@@ -94,13 +94,7 @@ const OwnerInvestigations = () => {
     setSuccess(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/deviation/${id}`, {
-        method: 'DELETE',
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.detail || result.error || 'Failed to delete deviation');
-      }
+      await del(`/deviation/${id}`);
       setDeviations((prev) => prev.filter((deviation) => deviation.id !== id));
       setSuccess('Draft deviation deleted successfully.');
     } catch (err) {

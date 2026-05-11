@@ -19,6 +19,7 @@ import {
   Cell,
 } from 'recharts';
 import MainLayout from '../../components/Layout/MainLayout';
+import { get } from '../../api';
 import QuickStats from '../../components/Common/QuickStats';
 import { COLORS } from '../../styles/theme';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
@@ -29,8 +30,7 @@ const QAAnalytics = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations?role=QA Reviewer');
-        const data = await response.json();
+        const data = await get('/deviations?role=QA Reviewer');
         setDeviations(data || []);
       } catch (err) {
         setDeviations([
