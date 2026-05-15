@@ -3,8 +3,10 @@ const BASE_URL = "https://devmem-api-ach7bfach7bjc9au.canadacentral-01.azurewebs
 
 // ✅ Common fetch handler
 const request = async (url, options = {}) => {
+  const fullUrl = `${BASE_URL}${url}`;
+  console.log("API CALL:", fullUrl, options);
   try {
-    const response = await fetch(`${BASE_URL}${url}`, {
+    const response = await fetch(fullUrl, {
       headers: {
         "Content-Type": "application/json",
         ...options.headers,

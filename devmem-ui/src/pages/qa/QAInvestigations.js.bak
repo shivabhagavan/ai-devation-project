@@ -34,7 +34,7 @@ const QAInvestigations = () => {
   useEffect(() => {
     const fetchDeviations = async () => {
       try {
-        const response = await fetch('http://localhost:8000/deviations');
+        const response = await fetch('https://devmem-api-ach7bfach7bjc9au.canadacentral-01.azurewebsites.net/deviations');
         const data = await response.json();
         setDeviations(data || []);
       } catch (err) {

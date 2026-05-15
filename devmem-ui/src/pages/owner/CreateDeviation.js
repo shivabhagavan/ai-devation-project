@@ -78,7 +78,7 @@ const CreateDeviation = () => {
       }
 
       const payload = {
-        event: form.deviationTitle,
+        event: form.narrativeObservation || form.deviationTitle,
         date: form.dateOccurrence,
         study: form.productName,
         detection_method: form.narrativeObservation,

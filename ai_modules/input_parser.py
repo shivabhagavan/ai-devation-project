@@ -9,7 +9,7 @@ def get_client():
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
-        print("⚠️ OPENAI_API_KEY missing → using fallback parser")
+        print("[WARNING] OPENAI_API_KEY missing - using fallback parser")
         return None
 
     return OpenAI(api_key=api_key)
@@ -85,7 +85,7 @@ def parse_deviation_input(user_text):
         return result
 
     except Exception as e:
-        print(f"❌ Parsing error: {e}")
+        print(f"[ERROR] Parsing error: {e}")
 
         # 🚨 SAFE FALLBACK
         return {

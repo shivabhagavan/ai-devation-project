@@ -1,5 +1,5 @@
 import React from "react";
-import { put } from "../api";
+import BASE_URL, { put } from "../api";
 import {
   Typography,
   Grid,
@@ -41,7 +41,7 @@ export default function Result({ result }) {
 
   const handleDownloadPDF = () => {
     window.open(
-      `/download-pdf/${result.id}`,
+      `${BASE_URL}/download-pdf/${result.id}`,
       "_blank"
     );
   };

@@ -2,7 +2,8 @@
 .venv/
 venv/
 node_modules/
-_pycache_/
+__pycache__/
+**/__pycache__/
 *.pyc
 *.db
 chroma_db/

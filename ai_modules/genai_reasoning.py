@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from openai import OpenAI
 from dotenv import load_dotenv
 from ai_modules.rag_retriever import retrieve_context
@@ -13,7 +14,7 @@ def get_client():
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
-        print("⚠️ OPENAI_API_KEY not found. Running in fallback mode.")
+        print("[WARNING] OPENAI_API_KEY not found. Running in fallback mode.")
         return None
 
     return OpenAI(api_key=api_key)
@@ -31,12 +32,16 @@ def _normalize_risk_level(value):
 
 def _calibrate_severity(deviation_input, risk_assessment, llm_severity):
     risk_assessment = risk_assessment or {}
+    overall_risk = _normalize_risk_level(risk_assessment.get("overall_risk"))
+    impact = _normalize_risk_level(risk_assessment.get("impact"))
 
     risk_levels = [
         _normalize_risk_level(risk_assessment.get("patient_safety")),
         _normalize_risk_level(risk_assessment.get("regulatory_compliance")),
         _normalize_risk_level(risk_assessment.get("data_integrity")),
         _normalize_risk_level(risk_assessment.get("product_quality")),
+        overall_risk,
+        impact,
     ]
 
     high_count = sum(1 for r in risk_levels if r == "High")
@@ -59,6 +64,74 @@ def _calibrate_severity(deviation_input, risk_assessment, llm_severity):
     return calibrated
 
 
+def _load_json_response(result_text):
+    """Parse model JSON, including occasional fenced JSON responses."""
+    try:
+        return json.loads(result_text)
+    except json.JSONDecodeError:
+        match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", result_text, re.DOTALL)
+        if match:
+            return json.loads(match.group(1))
+
+        start = result_text.find("{")
+        end = result_text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return json.loads(result_text[start:end + 1])
+
+        raise
+
+
+def _ensure_list(value, default):
+    if value is None:
+        return default
+    if isinstance(value, list):
+        return value
+    return [str(value)]
+
+
+def _normalize_analysis(analysis, deviation_input):
+    analysis.setdefault("risk_assessment", {})
+    analysis.setdefault("reasoning", [])
+    analysis.setdefault("probable_root_causes", [])
+    analysis.setdefault("investigation", {})
+    analysis.setdefault("confidence_score", 0.5)
+
+    legacy_capa = analysis.get("corrective_and_preventive_actions", [])
+    analysis["corrective_actions"] = _ensure_list(
+        analysis.get("corrective_actions"),
+        _ensure_list(legacy_capa, ["Manual review required"])
+    )
+    analysis["preventive_actions"] = _ensure_list(
+        analysis.get("preventive_actions"),
+        ["Improve SOP adherence and monitoring"]
+    )
+    analysis["reasoning"] = _ensure_list(analysis.get("reasoning"), ["AI analysis completed"])
+    analysis["probable_root_causes"] = _ensure_list(
+        analysis.get("probable_root_causes"),
+        ["Root cause under investigation"]
+    )
+
+    risk_assessment = analysis["risk_assessment"]
+    if "overall_risk" in risk_assessment:
+        overall_risk = _normalize_risk_level(risk_assessment.get("overall_risk"))
+        for key in ["patient_safety", "regulatory_compliance", "product_quality"]:
+            risk_assessment.setdefault(key, overall_risk)
+    if "impact" in risk_assessment:
+        risk_assessment.setdefault("data_integrity", _normalize_risk_level(risk_assessment.get("impact")))
+
+    confidence = analysis.get("confidence_score", 0.5)
+    if isinstance(confidence, (int, float)) and confidence > 1:
+        analysis["confidence_score"] = round(confidence / 100, 2)
+
+    analysis["severity"] = _calibrate_severity(
+        deviation_input,
+        risk_assessment,
+        analysis.get("severity")
+    )
+
+    return analysis
+
+
 # ---------------------------------------
 # MAIN ANALYSIS FUNCTION
 # ---------------------------------------
@@ -70,7 +143,7 @@ def analyze_deviation(deviation_input):
 
     # 🚨 FALLBACK IF OPENAI NOT AVAILABLE
     if client is None:
-        print("⚠️ Using fallback AI response")
+        print("[WARNING] Using fallback AI response")
 
         return {
             "severity": "Low",
@@ -102,9 +175,27 @@ Deviation:
 Context:
 {reference_context}
 
-Return ONLY JSON with:
-severity, risk_assessment, reasoning, probable_root_causes,
-corrective_actions, preventive_actions, investigation, confidence_score
+Return ONLY JSON with this exact structure:
+{{
+  "severity": "Low | Medium | High",
+  "risk_assessment": {{
+    "patient_safety": "Low | Medium | High",
+    "regulatory_compliance": "Low | Medium | High",
+    "data_integrity": "Low | Medium | High",
+    "product_quality": "Low | Medium | High"
+  }},
+  "reasoning": ["..."],
+  "probable_root_causes": ["..."],
+  "corrective_actions": ["..."],
+  "preventive_actions": ["..."],
+  "investigation": {{
+    "process_point": "...",
+    "cause_category": "...",
+    "cause_detail": "...",
+    "functional_area": "..."
+  }},
+  "confidence_score": 0.0
+}}
 """
 
     try:
@@ -114,29 +205,18 @@ corrective_actions, preventive_actions, investigation, confidence_score
                 {"role": "system", "content": "Return only JSON."},
                 {"role": "user", "content": prompt}
             ],
+            response_format={"type": "json_object"},
             temperature=0.2,
             max_tokens=1500
         )
 
         result_text = response.choices[0].message.content.strip()
-        analysis = json.loads(result_text)
+        analysis = _load_json_response(result_text)
 
-        # Normalize
-        for key in ["corrective_actions", "preventive_actions"]:
-            if not isinstance(analysis.get(key), list):
-                analysis[key] = [str(analysis.get(key))]
-
-        # Severity calibration
-        analysis["severity"] = _calibrate_severity(
-            deviation_input,
-            analysis.get("risk_assessment"),
-            analysis.get("severity")
-        )
-
-        return analysis
+        return _normalize_analysis(analysis, deviation_input)
 
     except Exception as e:
-        print(f"❌ AI error: {e}")
+        print(f"[ERROR] AI error: {e}")
 
         # 🚨 SAFE FALLBACK
         return {
@@ -185,5 +265,5 @@ def generate_preventive_actions(deviation_input, root_causes=None, corrective_ac
         return result.get("preventive_actions", ["Improve process control"])
 
     except Exception as e:
-        print(f"❌ Preventive generation failed: {e}")
+        print(f"[ERROR] Preventive generation failed: {e}")
         return ["Fallback preventive action"]
